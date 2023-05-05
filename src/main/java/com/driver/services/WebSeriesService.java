@@ -8,6 +8,9 @@ import com.driver.repository.WebSeriesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+
 @Service
 public class WebSeriesService {
 
@@ -17,14 +20,39 @@ public class WebSeriesService {
     @Autowired
     ProductionHouseRepository productionHouseRepository;
 
-    public Integer addWebSeries(WebSeriesEntryDto webSeriesEntryDto)throws  Exception{
+    public Integer addWebSeries(WebSeriesEntryDto webSeriesEntryDto) throws Exception {
 
-        //Add a webSeries to the database and update the ratings of the productionHouse
-        //Incase the seriesName is already present in the Db throw Exception("Series is already present")
-        //use function written in Repository Layer for the same
-        //Dont forget to save the production and webseries Repo
+        // Check if the web series already exists in the database
+        if (webSeriesRepository.existsBySeriesName(webSeriesEntryDto.getSeriesName())) {
+            throw new Exception("Web series already exists");
+        }
 
-        return null;
+        // Find the production house by the given production house ID
+        ProductionHouse productionHouse = productionHouseRepository.findById(webSeriesEntryDto.getProductionHouseId())
+                .orElseThrow(() -> new NoSuchElementException("Production house not found"));
+
+        // Create a new WebSeries object and set its properties
+        WebSeries webSeries = new WebSeries();
+        webSeries.setSeriesName(webSeriesEntryDto.getSeriesName());
+        webSeries.setAgeLimit(webSeriesEntryDto.getAgeLimit());
+        webSeries.setSubscriptionType(webSeriesEntryDto.getSubscriptionType());
+        webSeries.setProductionHouse(productionHouse);
+
+        // Add the new web series to the database
+        webSeries = webSeriesRepository.save(webSeries);
+
+        // Update the production house's rating
+        List<WebSeries> webSeriesList = productionHouse.getWebSeriesList();
+        webSeriesList.add(webSeries);
+        productionHouse.setWebSeriesList(webSeriesList);
+        double totalRating = webSeriesList.stream().mapToDouble(WebSeries::getRating).sum();
+        double newRating = totalRating / webSeriesList.size();
+        productionHouse.setRating(newRating);
+        productionHouseRepository.save(productionHouse);
+
+        return webSeries.getId();
+
+//        return null;
+
     }
-
 }

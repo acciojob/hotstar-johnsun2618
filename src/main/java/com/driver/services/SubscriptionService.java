@@ -26,7 +26,14 @@ public class SubscriptionService {
 
         //Save The subscription Object into the Db and return the total Amount that user has to pay
 
-        return null;
+        Subscription subscription = new Subscription();
+        subscription.setSubscriptionType(subscriptionEntryDto.getSubscriptionType());
+        subscription.setId(subscriptionEntryDto.getUserId());
+        subscription = subscriptionRepository.save(subscription);
+        return subscription.getTotalAmountPaid();
+
+//        return null;
+
     }
 
     public Integer upgradeSubscription(Integer userId)throws Exception{
@@ -35,7 +42,17 @@ public class SubscriptionService {
         //In all other cases just try to upgrade the subscription and tell the difference of price that user has to pay
         //update the subscription in the repository
 
-        return null;
+        Subscription currentSubscription = subscriptionRepository.findByUserId(userId);
+        SubscriptionType currentType = currentSubscription.getSubscriptionType();
+        if (currentType == SubscriptionType.ELITE) {
+            throw new Exception("Already the best subscription");
+        }
+        SubscriptionType nextType = currentType.next();
+        currentSubscription.setSubscriptionType(nextType);
+        subscriptionRepository.save(currentSubscription);
+        return nextType.getPrice() - currentType.getPrice();
+
+//        return null;
     }
 
     public Integer calculateTotalRevenueOfHotstar(){
@@ -43,7 +60,15 @@ public class SubscriptionService {
         //We need to find out total Revenue of hotstar : from all the subscriptions combined
         //Hint is to use findAll function from the SubscriptionDb
 
-        return null;
+        List<Subscription> subscriptions = subscriptionRepository.findAll();
+        int totalRevenue = 0;
+        for (Subscription subscription : subscriptions) {
+            totalRevenue += subscription.getTotalAmountPaid();
+        }
+        return totalRevenue;
+
+//        return null;
+
     }
 
 }
