@@ -78,7 +78,7 @@ public class User {
         this.mobNo = mobNo;
     }
 
-    public Integer getSubscription() {
+    public Subscription getSubscription() {
         return subscription;
     }
 

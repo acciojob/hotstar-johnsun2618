@@ -26,11 +26,18 @@ public class SubscriptionService {
 
         //Save The subscription Object into the Db and return the total Amount that user has to pay
 
+        // Create a new Subscription object from the DTO
         Subscription subscription = new Subscription();
+        subscription.setStartSubscriptionDate(new Date());
         subscription.setSubscriptionType(subscriptionEntryDto.getSubscriptionType());
-        subscription.setId(subscriptionEntryDto.getUserId());
-        subscription = subscriptionRepository.save(subscription);
-        return subscription.getTotalAmountPaid();
+        subscription.setUser(userRepository.findById(subscriptionEntryDto.getUserId()).orElse(null));
+
+        // Save the subscription object into the database
+
+//        subscriptionRepository.save(subscription);
+
+        // Return the total amount that the user has to pay
+        return (Integer) subscription.getSubscriptionType().getPrice();
 
 //        return null;
 
@@ -42,15 +49,33 @@ public class SubscriptionService {
         //In all other cases just try to upgrade the subscription and tell the difference of price that user has to pay
         //update the subscription in the repository
 
-        Subscription currentSubscription = subscriptionRepository.findByUserId(userId);
-        SubscriptionType currentType = currentSubscription.getSubscriptionType();
-        if (currentType == SubscriptionType.ELITE) {
+        // Find the user by ID and get their current subscription
+        User user = userRepository.findById(userId).orElse(null);
+        Subscription currentSubscription = user.getSubscription();
+
+        // Check if the user is already at the best subscription level
+        if (currentSubscription.getSubscriptionType() == SubscriptionType.ELITE) {
             throw new Exception("Already the best subscription");
         }
-        SubscriptionType nextType = currentType.next();
-        currentSubscription.setSubscriptionType(nextType);
-        subscriptionRepository.save(currentSubscription);
-        return nextType.getPrice() - currentType.getPrice();
+
+        // Get the next highest subscription level
+        SubscriptionType newSubscriptionType = currentSubscription.getSubscriptionType();
+
+        // Calculate the price difference between the current and new subscription
+        int priceDifference = newSubscriptionType.getPrice() - currentSubscription.;
+
+        // Create a new subscription object with the new subscription type
+        Subscription newSubscription = new Subscription();
+        newSubscription.setStartSubscriptionDate(new Date());
+        newSubscription.setSubscriptionType(newSubscriptionType);
+        newSubscription.setUser(user);
+
+        // Update the user's subscription in the database
+        user.setSubscription(newSubscription);
+        userRepository.save(user);
+
+        // Return the price difference
+        return priceDifference;
 
 //        return null;
     }
@@ -60,11 +85,15 @@ public class SubscriptionService {
         //We need to find out total Revenue of hotstar : from all the subscriptions combined
         //Hint is to use findAll function from the SubscriptionDb
 
-        List<Subscription> subscriptions = subscriptionRepository.findAll();
-        int totalRevenue = 0;
-        for (Subscription subscription : subscriptions) {
-            totalRevenue += subscription.getTotalAmountPaid();
-        }
+        // Find all subscriptions in the database
+        List<SubscriptionType> subscriptions = subscriptionRepository.findAll();
+
+        // Calculate the total revenue from all subscriptions
+        int totalRevenue = subscriptions.stream()
+                .mapToInt(subscription -> (int) subscription.getSubscriptionType().getPrice())
+                .sum();
+
+        // Return the total revenue
         return totalRevenue;
 
 //        return null;

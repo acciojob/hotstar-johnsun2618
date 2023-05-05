@@ -39,28 +39,33 @@ public class UserService {
         //Return the count of all webSeries that a user can watch based on his ageLimit and subscriptionType
         //Hint: Take out all the Webseries from the WebRepository
 
-
-        // Find the user based on the userId
         User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+        Subscription subscription = user.getSubscription();
 
-        // Find the subscription for the user
-        Subscription subscription = subscriptionRepository.
-                findById(user.getSubscription()).orElseThrow(() ->
-                        new NoSuchElementException("Subscription not found"));
+        if(subscription == null) {
+            return 0;
+        }
 
-        // Get the age limit of the user
-        Integer ageLimit = user.getAge();
+        List<WebSeries> webSeriesList = webSeriesRepository.findAllByAgeLimitLessThanEqualAndSubscriptionTypeLessThanEqual(
+                user.getAge(), subscription.getSubscriptionType().getSubscriptionType());
 
-        // Find all the web series that are viewable for the given age limit and subscription type
-        List<WebSeries> viewableWebSeries = webSeriesRepository.
-                findByAgeLimitLessThanEqualAndSubscriptionTypeLessThanEqual
-                        (ageLimit, subscription.getSubscriptionType());
+        return webSeriesList.size();
+    }
 
-        // Return the count of viewable web series
-        return viewableWebSeries.size();
+    public User getUser(Integer userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User not found"));
+    }
 
-//        return null;
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 
+    public List<WebSeries> getAllWebSeries() {
+        return webSeriesRepository.findAll();
+    }
+
+    public List<SubscriptionType> getAllSubscriptions() {
+        return subscriptionRepository.findAll();
     }
 
 

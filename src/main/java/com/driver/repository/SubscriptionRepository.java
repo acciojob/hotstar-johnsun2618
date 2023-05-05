@@ -1,9 +1,14 @@
 package com.driver.repository;
 
 import com.driver.model.Subscription;
+import com.driver.model.SubscriptionType;
+import com.driver.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SubscriptionRepository extends JpaRepository<Subscription,Integer> {
+import java.util.List;
+import java.util.Optional;
 
-    Subscription findByUserId(Integer userId);
+public interface SubscriptionRepository extends JpaRepository<SubscriptionType, Integer> {
+    SubscriptionType findByName(String name);
 }
+

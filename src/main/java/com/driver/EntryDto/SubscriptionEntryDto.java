@@ -38,4 +38,5 @@ public class SubscriptionEntryDto {
     public void setNoOfScreensRequired(int noOfScreensRequired) {
         this.noOfScreensRequired = noOfScreensRequired;
     }
+
 }

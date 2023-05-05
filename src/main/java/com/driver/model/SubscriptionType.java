@@ -6,11 +6,13 @@ public enum SubscriptionType {
     ELITE,
     ;
 
-    public Integer getPrice() {
-        return getPrice();
+
+    public Object getPrice() {
+        return null;
     }
 
-    public SubscriptionType next() {
-        return next();
+
+    public SubscriptionType getSubscriptionType() {
+        return null;
     }
 }
